@@ -148,7 +148,7 @@ void process_bed_entries(
     std::vector<std::unique_ptr<ts_faidx::FastaReader>> readers;
     for (const auto& file : fasta_files) {
         try {
-            readers.push_back(std::make_unique<ts_faidx::FastaReader>(file));
+            readers.push_back(std::unique_ptr<ts_faidx::FastaReader>(new ts_faidx::FastaReader(file)));
         } catch (const std::exception& e) {
             std::cerr << "Error opening " << file << ": " << e.what() << std::endl;
             throw;
