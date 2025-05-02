@@ -45,8 +45,9 @@ if(ZLIB_FOUND)
     add_definitions(-DHAVE_ZLIB)
 endif()
 
-# Add executable
+# Add executables
 add_executable(fasta_reader src/fasta_reader.cpp)
+add_executable(manyfasta src/manyfasta.cpp)
 
 # Link libraries
 target_link_libraries(fasta_reader
@@ -55,9 +56,15 @@ target_link_libraries(fasta_reader
     ${ZLIB_LIBRARIES}
 )
 
+target_link_libraries(manyfasta
+    Threads::Threads
+    ${HTSLIB_LIBRARIES}
+    ${ZLIB_LIBRARIES}
+)
+
 # Installation targets
 install(FILES include/thread_safe_faidx.hpp DESTINATION include)
-install(TARGETS fasta_reader DESTINATION bin)
+install(TARGETS fasta_reader manyfasta DESTINATION bin)
 
 # Option for building tests
 option(BUILD_TESTS "Build tests" OFF)

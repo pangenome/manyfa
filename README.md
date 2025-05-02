@@ -1,6 +1,6 @@
-# Thread-Safe FASTA/FASTQ Reader
+# Thread-Safe FASTA/FASTQ Tools
 
-A header-only C++ library providing thread-safe random access to bgzip compressed and indexed FASTA and FASTQ files.
+A collection of tools for thread-safe random access to bgzip compressed and indexed FASTA and FASTQ files.
 
 ## Why?
 
@@ -15,6 +15,7 @@ To work around this, we reimplement the index reader in a thread-safe manner in 
 - High-performance random access using HTSlib
 - Auto-discovery and loading of index files
 - Automatic index creation when missing
+- Multi-file sequence extraction with BED file support
 
 ## Requirements
 
@@ -74,7 +75,9 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-## Multi-threaded Example
+## Included Tools
+
+### fasta_reader
 
 The included demo application (`fasta_reader`) demonstrates how to use the library
 in a multi-threaded environment. Run with:
@@ -82,6 +85,35 @@ in a multi-threaded environment. Run with:
 ```bash
 ./fasta_reader -t 8 -n 1000 <fasta_file>
 ```
+
+### manyfasta
+
+A powerful tool that extracts sequences from multiple FASTA files based on regions specified in a BED file.
+It creates an index-of-indexes to efficiently map sequence names to their source files.
+
+#### Usage
+
+```bash
+./manyfasta [options] -b <bed_file> <fasta_file1> [fasta_file2 ...]
+```
+
+#### Options
+
+- `-b <file>` - BED file with regions to extract (required)
+- `-t <threads>` - Number of threads to use (default: number of CPUs)
+- `-p <prefix>` - Prefix for FASTA headers
+- `-n` - Add numeric suffix to FASTA headers
+- `-v` - Verbose output
+- `-h` - Show help message
+
+#### Example
+
+```bash
+# Extract regions from multiple genome builds
+./manyfasta -v -t 16 -b regions.bed hg19.fa hg38.fa chm13.fa > extracted_sequences.fa
+```
+
+The output will be a FASTA file with headers in the format `chrom:start-end` (or using the name from the BED file if provided).
 
 ## API Reference
 
