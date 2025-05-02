@@ -34,6 +34,7 @@ void print_usage(const char* program) {
     std::cerr << "Usage: " << program << " [options] -b <bed_file> <fasta_file1> [fasta_file2 ...]\n"
               << "Options:\n"
               << "  -b <file>       BED file with regions to extract\n"
+              << "  -f <file>       File containing a list of FASTA files (one per line)\n"
               << "  -t <threads>    Number of threads to use (default: number of CPUs)\n"
               << "  -p <prefix>     Prefix for FASTA headers (default: none)\n"
               << "  -n              Add numeric suffix to FASTA headers\n"
@@ -249,9 +250,39 @@ void process_bed_entries(
     }
 }
 
+// Read a list of FASTA files from a file
+std::vector<std::string> read_fasta_list(const std::string& filename, bool verbose) {
+    std::vector<std::string> fasta_files;
+    std::ifstream list_file(filename);
+    
+    if (!list_file.is_open()) {
+        throw std::runtime_error("Could not open FASTA list file: " + filename);
+    }
+    
+    std::string line;
+    while (std::getline(list_file, line)) {
+        // Skip comments and empty lines
+        if (line.empty() || line[0] == '#') continue;
+        
+        // Trim whitespace
+        line.erase(0, line.find_first_not_of(" \t\r\n"));
+        line.erase(line.find_last_not_of(" \t\r\n") + 1);
+        
+        if (!line.empty()) {
+            fasta_files.push_back(line);
+            if (verbose) {
+                std::cerr << "Added FASTA file from list: " << line << std::endl;
+            }
+        }
+    }
+    
+    return fasta_files;
+}
+
 int main(int argc, char* argv[]) {
     // Parse command line arguments
     std::string bed_file;
+    std::string fasta_list_file;
     int num_threads = std::thread::hardware_concurrency();
     std::string header_prefix;
     bool add_numeric_suffix = false;
@@ -262,6 +293,8 @@ int main(int argc, char* argv[]) {
         std::string arg = argv[i];
         if (arg == "-b" && i + 1 < argc) {
             bed_file = argv[++i];
+        } else if (arg == "-f" && i + 1 < argc) {
+            fasta_list_file = argv[++i];
         } else if (arg == "-t" && i + 1 < argc) {
             num_threads = std::stoi(argv[++i]);
         } else if (arg == "-p" && i + 1 < argc) {
@@ -278,6 +311,25 @@ int main(int argc, char* argv[]) {
         } else {
             std::cerr << "Unknown option: " << arg << std::endl;
             print_usage(argv[0]);
+            return 1;
+        }
+    }
+    
+    // If a fasta list file was provided, read additional FASTA files from it
+    if (!fasta_list_file.empty()) {
+        try {
+            if (verbose) {
+                std::cerr << "Reading FASTA files from list: " << fasta_list_file << std::endl;
+            }
+            
+            std::vector<std::string> list_files = read_fasta_list(fasta_list_file, verbose);
+            fasta_files.insert(fasta_files.end(), list_files.begin(), list_files.end());
+            
+            if (verbose) {
+                std::cerr << "Added " << list_files.size() << " FASTA files from list" << std::endl;
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Error reading FASTA list file: " << e.what() << std::endl;
             return 1;
         }
     }

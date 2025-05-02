@@ -45,10 +45,11 @@ cmake --build build
 ### Required Arguments
 
 - `-b <file>`: BED file with regions to extract
-- At least one FASTA file (multiple files can be specified)
+- At least one FASTA file (multiple files can be specified directly or via a list file)
 
 ### Options
 
+- `-f <file>`: File containing a list of FASTA files (one path per line)
 - `-t <threads>`: Number of threads to use (default: number of CPU cores)
 - `-p <prefix>`: Add a prefix to all FASTA headers
 - `-n`: Add numeric suffix to FASTA headers (useful for unique identifiers)
@@ -65,6 +66,17 @@ Extract regions from a single genome:
 Extract regions from multiple genome builds (prioritizing the first match):
 ```bash
 ./manyfasta -v -t 16 -b regions.bed hg19.fa hg38.fa chm13.fa > multi_build_sequences.fa
+```
+
+Extract regions using a list of FASTA files:
+```bash
+# Create a file with FASTA paths
+echo "/path/to/hg19.fa" > fasta_list.txt
+echo "/path/to/hg38.fa" >> fasta_list.txt
+echo "/path/to/chm13.fa" >> fasta_list.txt
+
+# Run with the list file
+./manyfasta -v -t 16 -b regions.bed -f fasta_list.txt > multi_build_sequences.fa
 ```
 
 Add custom prefix to headers:
