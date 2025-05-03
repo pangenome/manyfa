@@ -36,8 +36,6 @@ void print_usage(const char* program) {
               << "  -b <file>       BED file with regions to extract\n"
               << "  -f <file>       File containing a list of FASTA files (one per line)\n"
               << "  -t <threads>    Number of threads to use (default: number of CPUs)\n"
-              << "  -p <prefix>     Prefix for FASTA headers (default: none)\n"
-              << "  -n              Add numeric suffix to FASTA headers\n"
               << "  -v              Verbose output\n"
               << "  -h              Show this help message\n";
 }
@@ -67,6 +65,8 @@ std::vector<BedEntry> read_bed_file(const std::string& filename) {
         
         // Optional name field
         if (iss >> name) {
+            // Create a name in the format "name:start-end"
+            name = name + ":" + std::to_string(start) + "-" + std::to_string(end);
             entries.emplace_back(chrom, start, end, name);
         } else {
             // Create a name in the format "chrom:start-end" if not provided
@@ -141,8 +141,6 @@ void process_bed_entries(
     const std::map<std::string, SequenceSource>& sequence_index,
     const std::vector<std::string>& fasta_files,
     int num_threads,
-    const std::string& header_prefix,
-    bool add_numeric_suffix,
     bool verbose) {
     
     // Create a vector of FastaReader objects, one per file
@@ -179,7 +177,7 @@ void process_bed_entries(
                     auto it = sequence_index.find(entry.chrom);
                     if (it == sequence_index.end()) {
                         std::lock_guard<std::mutex> lock(output_mutex);
-                        std::cerr << "Warning: Sequence '" << entry.chrom << "' not found in any FASTA file" << std::endl;
+                        std::cerr << "[manyfasta] Warning: Sequence '" << entry.chrom << "' not found in any FASTA file" << std::endl;
                         
                         // Still output a FASTA entry with empty sequence for better tracking
                         std::lock_guard<std::mutex> output_lock(output_mutex);
@@ -193,7 +191,7 @@ void process_bed_entries(
                     // Validate coordinates
                     if (entry.start < 0 || entry.end > source.length || entry.start >= entry.end) {
                         std::lock_guard<std::mutex> lock(output_mutex);
-                        std::cerr << "Warning: Invalid coordinates for " << entry.chrom 
+                        std::cerr << "[manyfasta] Warning: Invalid coordinates for " << entry.chrom 
                                   << ":" << entry.start << "-" << entry.end 
                                   << " (sequence length: " << source.length << ")" << std::endl;
                         continue;
@@ -202,16 +200,8 @@ void process_bed_entries(
                     // Fetch the sequence
                     std::string sequence = reader->fetch_sequence(entry.chrom, entry.start, entry.end);
                     
-                    // Construct the header
-                    std::string header;
-                    if (!header_prefix.empty()) {
-                        header = header_prefix;
-                    }
-                    header += entry.name;
-                    
-                    if (add_numeric_suffix) {
-                        header += "_" + std::to_string(idx + 1);
-                    }
+                    // Use the entry name (which now includes coordinates) as the header
+                    std::string header = entry.name;
                     
                     // Output FASTA entry (thread-safe)
                     {
@@ -288,8 +278,6 @@ int main(int argc, char* argv[]) {
     std::string bed_file;
     std::string fasta_list_file;
     int num_threads = std::thread::hardware_concurrency();
-    std::string header_prefix;
-    bool add_numeric_suffix = false;
     bool verbose = false;
     std::vector<std::string> fasta_files;
     
@@ -301,10 +289,6 @@ int main(int argc, char* argv[]) {
             fasta_list_file = argv[++i];
         } else if (arg == "-t" && i + 1 < argc) {
             num_threads = std::stoi(argv[++i]);
-        } else if (arg == "-p" && i + 1 < argc) {
-            header_prefix = argv[++i];
-        } else if (arg == "-n") {
-            add_numeric_suffix = true;
         } else if (arg == "-v") {
             verbose = true;
         } else if (arg == "-h") {
@@ -376,9 +360,7 @@ int main(int argc, char* argv[]) {
             bed_entries, 
             sequence_index, 
             fasta_files, 
-            num_threads, 
-            header_prefix, 
-            add_numeric_suffix,
+            num_threads,
             verbose
         );
         
