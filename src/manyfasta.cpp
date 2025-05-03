@@ -179,7 +179,11 @@ void process_bed_entries(
                     auto it = sequence_index.find(entry.chrom);
                     if (it == sequence_index.end()) {
                         std::lock_guard<std::mutex> lock(output_mutex);
-                        std::cerr << "Warning: Sequence " << entry.chrom << " not found in any FASTA file" << std::endl;
+                        std::cerr << "Warning: Sequence '" << entry.chrom << "' not found in any FASTA file" << std::endl;
+                        
+                        // Still output a FASTA entry with empty sequence for better tracking
+                        std::lock_guard<std::mutex> output_lock(output_mutex);
+                        std::cout << ">" << entry.name << " [NOT_FOUND]\n";
                         continue;
                     }
                     

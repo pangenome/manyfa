@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Create test directory if it doesn't exist
+mkdir -p test_data
+
+# Generate first test FASTA file
+cat > test_data/test1.fa << EOF
+>chr1
+ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT
+ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT
+>chr2
+GCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTA
+GCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTA
+>chr3
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+EOF
+
+# Generate second test FASTA file
+cat > test_data/test2.fa << EOF
+>chr1
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+>chr4
+CGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
+CGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
+>chr5
+GAATTCGAATTCGAATTCGAATTCGAATTCGAATTCGAATTCGAATTCGAATTCGAATTC
+GAATTCGAATTCGAATTCGAATTCGAATTCGAATTCGAATTCGAATTCGAATTCGAATTC
+EOF
+
+# Generate a BED file with regions to extract
+cat > test_data/regions.bed << EOF
+chr1	0	10	region1
+chr1	20	30	region2
+chr2	5	15	region3
+chr3	10	20	region4
+chr4	0	10	region5
+chr5	30	40	region6
+chr6	0	10	missing_region
+EOF
+
+# Generate a list file with FASTA paths
+cat > test_data/fasta_list.txt << EOF
+test_data/test1.fa
+test_data/test2.fa
+EOF
+
+# Create index files for the FASTA files
+samtools faidx test_data/test1.fa
+samtools faidx test_data/test2.fa
+
+echo "Test data generated in test_data/ directory"
+echo "Run the following command to test manyfasta:"
+echo "./build/bin/manyfasta -v -b test_data/regions.bed -f test_data/fasta_list.txt"
