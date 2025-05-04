@@ -103,7 +103,8 @@ std::map<std::string, SequenceSource> build_sequence_index(
                 
                 std::lock_guard<std::mutex> lock(index_mutex);
                 for (const auto& seq_name : sequence_names) {
-                    // Only add if not already present or if this file has precedence
+                    // Only add if not already present - this maintains the order of precedence
+                    // (earlier files in the list have higher precedence)
                     if (sequence_index.find(seq_name) == sequence_index.end()) {
                         SequenceSource source;
                         source.filename = fasta_file;
@@ -177,7 +178,7 @@ void process_bed_entries(
                     auto it = sequence_index.find(entry.chrom);
                     if (it == sequence_index.end()) {
                         std::lock_guard<std::mutex> lock(output_mutex);
-                        std::cerr << "[manyfasta] Warning: Sequence '" << entry.chrom << "' not found in any FASTA file" << std::endl;
+                        std::cerr << "[manyfasta] Warning: Sequence '" << entry.chrom << "' not found in any FASTA file - skipping" << std::endl;
                         continue;
                     }
                     
@@ -202,11 +203,11 @@ void process_bed_entries(
                     // Output FASTA entry (thread-safe)
                     {
                         std::lock_guard<std::mutex> lock(output_mutex);
-                        std::cout << ">" << header << "\n";
+                        std::cout << ">" << header << std::endl;
                         
                         // Output sequence with line wrapping at 60 characters
                         for (size_t i = 0; i < sequence.length(); i += 60) {
-                            std::cout << sequence.substr(i, 60) << "\n";
+                            std::cout << sequence.substr(i, 60) << std::endl;
                         }
                     }
                     
