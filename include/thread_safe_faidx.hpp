@@ -415,7 +415,7 @@ public:
      * @param fasta_path Path to the FASTA/FASTQ file
      * @param build_index Whether to build an index if it doesn't exist
      */
-    FastaReader(const std::string& fasta_path, bool build_index = false) 
+    FastaReader(const std::string& fasta_path, bool build_index = false, bool debug = false) 
         : filename_(fasta_path) {
         
         // Check if file exists first
@@ -426,7 +426,7 @@ public:
         fclose(test_file);
         
         try {
-            std::cout << "Opening FASTA file: " << fasta_path << std::endl;
+            // Output is now controlled by the caller
             
             int flags = 0;
             if (build_index) {
@@ -449,7 +449,7 @@ public:
             
             // Get sequence names and lengths
             int n_seqs = faidx_nseq(fai);
-            std::cout << "Found " << n_seqs << " sequences in index" << std::endl;
+            // Output is now controlled by the caller
             
             for (int i = 0; i < n_seqs; i++) {
                 const char* name = faidx_iseq(fai, i);
@@ -487,7 +487,7 @@ public:
                 entries_[name] = entry;
             }
             
-            std::cout << "Index loaded successfully" << std::endl;
+            // Output is now controlled by the caller
             
             // Remember to clean up
             fai_destroy(fai);

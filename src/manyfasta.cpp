@@ -37,6 +37,7 @@ void print_usage(const char* program) {
               << "  -f <file>       File containing a list of FASTA files (one per line)\n"
               << "  -t <threads>    Number of threads to use (default: number of CPUs)\n"
               << "  -v              Verbose output\n"
+              << "  -d              Debug output (includes detailed loading information)\n"
               << "  -h              Show this help message\n";
 }
 
@@ -98,7 +99,14 @@ std::map<std::string, SequenceSource> build_sequence_index(
                     std::cerr << "Loading index for " << fasta_file << std::endl;
                 }
                 
-                ts_faidx::FastaReader reader(fasta_file, true);
+                // Create a reader with debug output if requested
+                ts_faidx::FastaReader reader(fasta_file, true, debug);
+                
+                // Log file loading if debug is enabled
+                if (debug) {
+                    std::lock_guard<std::mutex> lock(index_mutex);
+                    std::cerr << "[manyfasta] Opening FASTA file: " << fasta_file << std::endl;
+                }
                 auto sequence_names = reader.get_sequence_names();
                 
                 std::lock_guard<std::mutex> lock(index_mutex);
@@ -142,13 +150,19 @@ void process_bed_entries(
     const std::map<std::string, SequenceSource>& sequence_index,
     const std::vector<std::string>& fasta_files,
     int num_threads,
-    bool verbose) {
+    bool verbose,
+    bool debug) {
     
     // Create a vector of FastaReader objects, one per file
     std::vector<std::unique_ptr<ts_faidx::FastaReader>> readers;
     for (const auto& file : fasta_files) {
         try {
-            readers.push_back(std::make_unique<ts_faidx::FastaReader>(file));
+            auto reader = std::make_unique<ts_faidx::FastaReader>(file, false, debug);
+            if (debug) {
+                std::lock_guard<std::mutex> lock(output_mutex);
+                std::cerr << "[manyfasta] Loaded reader for: " << file << std::endl;
+            }
+            readers.push_back(std::move(reader));
         } catch (const std::exception& e) {
             std::cerr << "Error opening " << file << ": " << e.what() << std::endl;
             throw;
@@ -276,6 +290,7 @@ int main(int argc, char* argv[]) {
     std::string fasta_list_file;
     int num_threads = std::thread::hardware_concurrency();
     bool verbose = false;
+    bool debug = false;
     std::vector<std::string> fasta_files;
     
     for (int i = 1; i < argc; ++i) {
@@ -288,6 +303,8 @@ int main(int argc, char* argv[]) {
             num_threads = std::stoi(argv[++i]);
         } else if (arg == "-v") {
             verbose = true;
+        } else if (arg == "-d") {
+            debug = true;
         } else if (arg == "-h") {
             print_usage(argv[0]);
             return 0;
@@ -358,7 +375,8 @@ int main(int argc, char* argv[]) {
             sequence_index, 
             fasta_files, 
             num_threads,
-            verbose
+            verbose,
+            debug
         );
         
         return 0;

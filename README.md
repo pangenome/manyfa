@@ -52,6 +52,7 @@ cmake --build build
 - `-f <file>`: File containing a list of FASTA files (one path per line)
 - `-t <threads>`: Number of threads to use (default: number of CPU cores)
 - `-v`: Verbose output with progress information
+- `-d`: Debug output (shows detailed file loading information)
 - `-h`: Show help message
 
 ### Examples
