@@ -51,8 +51,6 @@ cmake --build build
 
 - `-f <file>`: File containing a list of FASTA files (one path per line)
 - `-t <threads>`: Number of threads to use (default: number of CPU cores)
-- `-p <prefix>`: Add a prefix to all FASTA headers
-- `-n`: Add numeric suffix to FASTA headers (useful for unique identifiers)
 - `-v`: Verbose output with progress information
 - `-h`: Show help message
 
@@ -77,11 +75,6 @@ echo "/path/to/chm13.fa" >> fasta_list.txt
 
 # Run with the list file
 ./manyfasta -v -t 16 -b regions.bed -f fasta_list.txt > multi_build_sequences.fa
-```
-
-Add custom prefix to headers:
-```bash
-./manyfasta -p "SAMPLE1_" -b regions.bed reference.fa > prefixed_sequences.fa
 ```
 
 ## How It Works
