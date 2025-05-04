@@ -82,7 +82,8 @@ std::vector<BedEntry> read_bed_file(const std::string& filename) {
 // Build an index of sequence names to their source files
 std::map<std::string, SequenceSource> build_sequence_index(
     const std::vector<std::string>& fasta_files,
-    bool verbose) {
+    bool verbose,
+    bool debug) {
     
     std::map<std::string, SequenceSource> sequence_index;
     std::mutex index_mutex;
@@ -93,7 +94,7 @@ std::map<std::string, SequenceSource> build_sequence_index(
     for (size_t file_idx = 0; file_idx < fasta_files.size(); ++file_idx) {
         const std::string& fasta_file = fasta_files[file_idx];
         
-        futures.push_back(std::async(std::launch::async, [&, file_idx, fasta_file]() {
+        futures.push_back(std::async(std::launch::async, [&, file_idx, fasta_file, debug]() {
             try {
                 if (verbose) {
                     std::cerr << "Loading index for " << fasta_file << std::endl;
@@ -152,6 +153,9 @@ void process_bed_entries(
     int num_threads,
     bool verbose,
     bool debug) {
+    
+    // Mutex for thread-safe output
+    std::mutex output_mutex;
     
     // Create a vector of FastaReader objects, one per file
     std::vector<std::unique_ptr<ts_faidx::FastaReader>> readers;
@@ -363,7 +367,7 @@ int main(int argc, char* argv[]) {
         }
         
         // Build index of sequence names to source files
-        auto sequence_index = build_sequence_index(fasta_files, verbose);
+        auto sequence_index = build_sequence_index(fasta_files, verbose, debug);
         
         if (verbose) {
             std::cerr << "Processing regions using " << num_threads << " threads" << std::endl;
