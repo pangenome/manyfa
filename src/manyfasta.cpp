@@ -180,7 +180,7 @@ void process_bed_entries(
                         std::cerr << "[manyfasta] Warning: Sequence '" << entry.chrom << "' not found in any FASTA file" << std::endl;
                         
                         // Still output a FASTA entry with empty sequence for better tracking
-                        std::lock_guard<std::mutex> output_lock(output_mutex);
+                        // We already have the mutex locked, don't try to lock it again
                         std::cout << ">" << entry.name << " [NOT_FOUND]\n";
                         continue;
                     }
