@@ -1,9 +1,22 @@
 cmake_minimum_required(VERSION 3.10)
 project(ThreadSafeFaidx VERSION 0.1.0 LANGUAGES CXX)
 
+# Build options
+option(BUILD_STATIC "Build static binary" OFF)
+
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Set static compilation flags if requested
+if (BUILD_STATIC)
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+  set(BUILD_SHARED_LIBS OFF)
+  set(CMAKE_EXE_LINKER_FLAGS "-static")
+  set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
+else ()
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif ()
 
 # Create proper directory structure
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

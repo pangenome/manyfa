@@ -36,6 +36,13 @@ cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
+For a static build (with all dependencies linked statically):
+
+```bash
+cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON
+cmake --build build
+```
+
 ## Usage
 
 ```bash
