@@ -51,5 +51,5 @@ samtools faidx test_data/test1.fa
 samtools faidx test_data/test2.fa
 
 echo "Test data generated in test_data/ directory"
-echo "Run the following command to test manyfasta:"
-echo "./build/bin/manyfasta -v -b test_data/regions.bed -f test_data/fasta_list.txt"
+echo "Run the following command to test manyfa:"
+echo "./build/bin/manyfa -v -b test_data/regions.bed -f test_data/fasta_list.txt"

@@ -73,7 +73,7 @@ find_library(LIBBZ2_LIBRARY NAMES bz2 libbz2)
 
 # Add executables
 add_executable(fasta_reader src/fasta_reader.cpp)
-add_executable(manyfasta src/manyfasta.cpp)
+add_executable(manyfa src/manyfa.cpp)
 
 # Set up link libraries list based on static/dynamic build
 set(COMMON_LIBRARIES
@@ -95,11 +95,11 @@ endif()
 
 # Link libraries
 target_link_libraries(fasta_reader ${COMMON_LIBRARIES})
-target_link_libraries(manyfasta ${COMMON_LIBRARIES})
+target_link_libraries(manyfa ${COMMON_LIBRARIES})
 
 # Installation targets
 install(FILES include/thread_safe_faidx.hpp DESTINATION include)
-install(TARGETS fasta_reader manyfasta DESTINATION bin)
+install(TARGETS fasta_reader manyfa DESTINATION bin)
 
 # Option for building tests
 option(BUILD_TESTS "Build tests" OFF)

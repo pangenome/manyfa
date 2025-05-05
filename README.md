@@ -1,10 +1,10 @@
-# ManyFasta
+# ManyFA
 
 A high-performance tool for extracting sequences from multiple FASTA files in parallel using BED coordinates.
 
 ## Overview
 
-ManyFasta efficiently extracts genomic sequences from multiple reference genomes or FASTA files using coordinates 
+ManyFA efficiently extracts genomic sequences from multiple reference genomes or FASTA files using coordinates 
 specified in a BED file. It builds a smart index-of-indexes to map sequence names to their source files, allowing 
 fast lookup and retrieval even when working with large datasets or multiple genome builds.
 
@@ -30,8 +30,8 @@ fast lookup and retrieval even when working with large datasets or multiple geno
 ### Building from Source
 
 ```bash
-git clone https://github.com/yourusername/manyfasta.git
-cd manyfasta
+git clone https://github.com/yourusername/manyfa.git
+cd manyfa
 cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
@@ -46,7 +46,7 @@ cmake --build build
 ## Usage
 
 ```bash
-./manyfasta [options] -b <bed_file> <fasta_file1> [fasta_file2 ...]
+./manyfa [options] -b <bed_file> <fasta_file1> [fasta_file2 ...]
 ```
 
 ### Required Arguments
@@ -66,12 +66,12 @@ cmake --build build
 
 Extract regions from a single genome:
 ```bash
-./manyfasta -v -b regions.bed reference.fa > extracted_sequences.fa
+./manyfa -v -b regions.bed reference.fa > extracted_sequences.fa
 ```
 
 Extract regions from multiple genome builds (prioritizing the first match):
 ```bash
-./manyfasta -v -t 16 -b regions.bed hg19.fa hg38.fa chm13.fa > multi_build_sequences.fa
+./manyfa -v -t 16 -b regions.bed hg19.fa hg38.fa chm13.fa > multi_build_sequences.fa
 ```
 
 Extract regions using a list of FASTA files:
@@ -82,12 +82,12 @@ echo "/path/to/hg38.fa" >> fasta_list.txt
 echo "/path/to/chm13.fa" >> fasta_list.txt
 
 # Run with the list file
-./manyfasta -v -t 16 -b regions.bed -f fasta_list.txt > multi_build_sequences.fa
+./manyfa -v -t 16 -b regions.bed -f fasta_list.txt > multi_build_sequences.fa
 ```
 
 ## How It Works
 
-1. ManyFasta loads all FASTA indexes in parallel
+1. ManyFA loads all FASTA indexes in parallel
 2. It builds a sequence-to-file mapping (index-of-indexes)
 3. It parses the BED file for extraction coordinates
 4. It distributes extraction work across multiple threads
@@ -95,7 +95,7 @@ echo "/path/to/chm13.fa" >> fasta_list.txt
 
 ## Underlying Library
 
-ManyFasta is built on a thread-safe FASTA/FASTQ accessor library that solves concurrency issues 
+ManyFA is built on a thread-safe FASTA/FASTQ accessor library that solves concurrency issues 
 in htslib's faidx implementation. The library can be used independently in your own projects.
 
 ```cpp
