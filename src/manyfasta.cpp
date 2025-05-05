@@ -174,7 +174,6 @@ void process_bed_entries(
         thread_work[i % num_threads].push_back(i);
     }
     
-    std::mutex output_mutex;
     std::atomic<size_t> processed_count(0);
     std::vector<std::thread> threads;
     
