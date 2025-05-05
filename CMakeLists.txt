@@ -51,29 +51,51 @@ else()
     endif()
 endif()
 
-# Find zlib
+# Find required dependencies
 find_package(ZLIB)
 if(ZLIB_FOUND)
     include_directories(${ZLIB_INCLUDE_DIRS})
     add_definitions(-DHAVE_ZLIB)
 endif()
 
+# Find libdeflate (required for static builds with htslib)
+find_library(LIBDEFLATE_LIBRARY NAMES deflate libdeflate)
+if(NOT LIBDEFLATE_LIBRARY)
+    message(STATUS "libdeflate not found in standard location, will try to build statically")
+    if(BUILD_STATIC)
+        message(WARNING "Static build enabled but libdeflate not found - static linking may fail")
+    endif()
+endif()
+
+# Find additional libraries needed for static linking
+find_library(LIBLZMA_LIBRARY NAMES lzma liblzma)
+find_library(LIBBZ2_LIBRARY NAMES bz2 libbz2)
+
 # Add executables
 add_executable(fasta_reader src/fasta_reader.cpp)
 add_executable(manyfasta src/manyfasta.cpp)
 
-# Link libraries
-target_link_libraries(fasta_reader
+# Set up link libraries list based on static/dynamic build
+set(COMMON_LIBRARIES
     Threads::Threads
     ${HTSLIB_LIBRARIES}
     ${ZLIB_LIBRARIES}
 )
 
-target_link_libraries(manyfasta
-    Threads::Threads
-    ${HTSLIB_LIBRARIES}
-    ${ZLIB_LIBRARIES}
-)
+# Add additional libraries for static linking
+if(BUILD_STATIC)
+    list(APPEND COMMON_LIBRARIES
+        ${LIBDEFLATE_LIBRARY}
+        ${LIBLZMA_LIBRARY}
+        ${LIBBZ2_LIBRARY}
+        dl
+        m
+    )
+endif()
+
+# Link libraries
+target_link_libraries(fasta_reader ${COMMON_LIBRARIES})
+target_link_libraries(manyfasta ${COMMON_LIBRARIES})
 
 # Installation targets
 install(FILES include/thread_safe_faidx.hpp DESTINATION include)
