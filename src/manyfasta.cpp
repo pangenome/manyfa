@@ -64,16 +64,11 @@ std::vector<BedEntry> read_bed_file(const std::string& filename) {
             continue; // Skip malformed lines
         }
         
-        // Optional name field
-        if (iss >> name) {
-            // Create a name in the format "name:start-end"
-            name = name + ":" + std::to_string(start) + "-" + std::to_string(end);
-            entries.emplace_back(chrom, start, end, name);
-        } else {
-            // Create a name in the format "chrom:start-end" if not provided
-            name = chrom + ":" + std::to_string(start) + "-" + std::to_string(end);
-            entries.emplace_back(chrom, start, end, name);
-        }
+        // Always create a name in the format "chrom:start-end" regardless of whether a name was provided
+        // This provides a natural way to identify the sequences
+        iss >> name;  // Read the name field if it exists (but we won't use it)
+        name = chrom + ":" + std::to_string(start) + "-" + std::to_string(end);
+        entries.emplace_back(chrom, start, end, name);
     }
     
     return entries;
