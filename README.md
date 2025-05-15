@@ -30,7 +30,7 @@ fast lookup and retrieval even when working with large datasets or multiple geno
 ### Building from Source
 
 ```bash
-git clone https://github.com/yourusername/manyfa.git
+git clone https://github.com/pangenome/manyfa.git
 cd manyfa
 cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Release
 cmake --build build
